@@ -1,0 +1,4 @@
+[
+ [:app :lt.objs.plugins/load-js "ltinator_compiled.js"]
+ [:ltinator.hello :lt.plugins.ltinator/on-close-destroy]
+ ]
