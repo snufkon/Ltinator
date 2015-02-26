@@ -9,6 +9,7 @@
             [lt.objs.notifos :as notifos]
             [lt.objs.opener :as opener]
             [lt.objs.context :as ctx]
+            [lt.objs.sidebar.workspace :as sworkspace]
             [lt.util.dom :as dom])
   (:require-macros [lt.macros :refer [defui behavior]]))
 
@@ -99,9 +100,10 @@
   [project]
   (let [ws workspace/current-ws
         tabset-num (count (:tabsets project))]
-    (object/raise ws :clear!)
+    (doseq [folder (:folders @sworkspace/tree)]
+      (object/raise ws :remove.folder! (:path @folder)))
     (doseq [f (:workspace project)]
-      (object/raise ws :add.folder! f))
+      (object/raise sworkspace/tree :workspace.add.folder! f))
     (cmd/exec! :tabs.close-all)
     (change-to-only-one-tabset)
     (open-tabsets project)))
