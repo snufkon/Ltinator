@@ -96,7 +96,7 @@
     (dotimes [n (- current-tabset-num 1)]
       (cmd/exec! :tabset.close))))
 
-(defn- open-working-environment
+(defn- open-project
   [project]
   (let [ws workspace/current-ws
         tabset-num (count (:tabsets project))]
@@ -166,23 +166,23 @@
                         (let [path (str @project-directory "/auto-saved.edn")]
                           (when-let [project (load-project path)]
                             (notifos/set-msg! (str "Loaded: " path))
-                            (open-working-environment project))))))
+                            (open-project project))))))
 
 
 ;;;
 ;;; Commands
 ;;;
 
-(cmd/command {:command :ltinator.open-working-environment
+(cmd/command {:command :ltinator.open-project
               :desc "Ltinator: Select project to open"
               :options add-selector
               :exec (fn [item]
                       (if-let [project (item->project item)]
-                        (open-working-environment project)
+                        (open-project project)
                         (notifos/set-msg! (str "Failed to read project file: " (:path item)))))})
 
-(cmd/command {:command :ltinator.save-project-file-from-current
-              :desc "Ltinator: Save project file from current working environment"
+(cmd/command {:command :ltinator.save-project
+              :desc "Ltinator: Save project from current working environment"
               :exec (fn []
                       (when (check-project-dir)
                         (let [path (str @project-directory "/new-project.edn")
