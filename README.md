@@ -3,9 +3,13 @@
 
 Working environment means `workspace`, `tabsets` and `tabs` of LightTable.
 
+## Installation
+
+Install this plugin by using LightTable's plugin manager (Ctrl-Space -> `Plugins: Show plugin manager`).
+
 ## Setup
 
-Add the following to your `user.behaviors` (Ctrl-Space -> Settings: User behaviors)
+Add the following to your `user.behaviors` (Ctrl-Space -> `Settings: User behaviors`)
 
     [:app :lt.plugins.ltinator/set-directory "directory path to save project files"]
 
@@ -13,7 +17,7 @@ Add the following to your `user.behaviors` (Ctrl-Space -> Settings: User behavio
 
 ### Open
 
-You can open a project (working environment) to select `Ltinator: Select project to open` from the command panel or set the following key bind to your `user.keymap` (Ctrl-Space -> Settings: User keymap) and hit the keys.
+You can open a project (working environment) to select `Ltinator: Select project to open` from the command panel or set the following key bind to your `user.keymap` (Ctrl-Space -> `Settings: User keymap`) and hit the keys.
 
     [:app "ctrl-shift-o" :ltinator.open-project]
 
