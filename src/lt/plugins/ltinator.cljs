@@ -15,6 +15,8 @@
 
 (defonce project-directory (atom nil))
 
+(defonce opened-project-path (atom nil))
+
 (defn- check-project-dir
   []
   (if (files/dir? @project-directory)
@@ -110,7 +112,8 @@
 
 (defn- save
   [path project]
-  (files/save path (str project)))
+  (files/save path (str project))
+  (notifos/set-msg! (str "Saved: " path)))
 
 
 ;;;
@@ -125,8 +128,7 @@
                        (let [path (if (empty? (files/ext (dom/val me)))
                                     (str (dom/val me) ".edn")
                                     (dom/val me))]
-                         (save path project)
-                         (notifos/set-msg! (str "Saved: " path)))))))
+                         (save path project))))))
 
 
 ;;;
@@ -177,15 +179,26 @@
               :desc "Ltinator: Select project to open"
               :options add-selector
               :exec (fn [item]
-                      (if-let [project (item->project item)]
-                        (open-project project)
-                        (notifos/set-msg! (str "Failed to read project file: " (:path item)))))})
+                      (let [path (:path item)]
+                        (if-let [project (item->project item)]
+                          (do
+                            (open-project project)
+                            (reset! opened-project-path path))
+                          (notifos/set-msg! (str "Failed to read project file: " path)))))})
 
-(cmd/command {:command :ltinator.save-project
-              :desc "Ltinator: Save project from current working environment"
+(cmd/command {:command :ltinator.save-project-as
+              :desc "Ltinator: Save project as.."
               :exec (fn []
                       (when (check-project-dir)
                         (let [path (str @project-directory "/new-project.edn")
                               s (save-project path (current-project))]
                           (set! opener/active-dialog s)
                           (dom/trigger s :click))))})
+
+(cmd/command {:command :ltinator.save-project
+              :desc "Ltinator: Save project"
+              :exec (fn []
+                      (when (check-project-dir)
+                        (if @opened-project-path
+                          (save @opened-project-path (current-project))
+                          (cmd/exec! :ltinator.save-project-as))))})
