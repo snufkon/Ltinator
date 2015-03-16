@@ -210,7 +210,6 @@
 (cmd/command {:command :ltinator.save-project-as
               :desc "Ltinator: Save project as.."
               :exec (fn []
-                      (println "Save project as..")
                       (when (check-project-dir)
                         (let [path (str @project-directory "/new-project.edn")
                               s (save-project path (current-project))]
