@@ -18,6 +18,12 @@
 
 (defonce opened-project-path (atom nil))
 
+(defn- project-opened?
+  []
+  (if @opened-project-path
+    true
+    false))
+
 (defn- check-project-dir
   []
   (if (files/dir? @project-directory)
@@ -223,6 +229,6 @@
               :desc "Ltinator: Save project"
               :exec (fn []
                       (when (check-project-dir)
-                        (if @opened-project-path
+                        (if (project-opened?)
                           (save @opened-project-path (current-project))
                           (cmd/exec! :ltinator.save-project-as))))})
