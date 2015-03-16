@@ -147,6 +147,11 @@
   (reset! opened-project-path path)
   (add-project-name-to-title path))
 
+(defn- clear-opened-project
+  []
+  (reset! opened-project-path nil)
+  (change-title "Light Table"))
+
 
 ;;;
 ;;; UIs
@@ -232,3 +237,8 @@
                         (if (project-opened?)
                           (save @opened-project-path (current-project))
                           (cmd/exec! :ltinator.save-project-as))))})
+
+(cmd/command {:command :ltinator.clear-project
+              :desc "Ltinator: Clear opened project"
+              :exec (fn []
+                      (clear-opened-project))})
