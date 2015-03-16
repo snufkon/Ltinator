@@ -10,6 +10,7 @@
             [lt.objs.opener :as opener]
             [lt.objs.context :as ctx]
             [lt.objs.sidebar.workspace :as sworkspace]
+            [lt.objs.titlebar :as titlebar]
             [lt.util.dom :as dom])
   (:require-macros [lt.macros :refer [defui behavior]]))
 
@@ -46,6 +47,10 @@
   []
   {:workspace (current-folders)
    :tabsets (current-tab-paths)})
+
+(defn- path->project-name
+  [path]
+  (-> path files/basename files/without-ext))
 
 (defn- load-project
   [path]
@@ -115,6 +120,21 @@
   (files/save path (str project))
   (notifos/set-msg! (str "Saved: " path)))
 
+(defn- change-title
+  [title]
+  (set! (.-title titlebar/win) title))
+
+(defn- add-project-name-to-title
+  [path]
+  (let [name (path->project-name path)
+        title (str "Light Table [" name "]")]
+    (change-title title)))
+
+(defn- change-opened-project-path
+  [path]
+  (reset! opened-project-path path)
+  (add-project-name-to-title path))
+
 
 ;;;
 ;;; UIs
@@ -128,7 +148,8 @@
                        (let [path (if (empty? (files/ext (dom/val me)))
                                     (str (dom/val me) ".edn")
                                     (dom/val me))]
-                         (save path project))))))
+                         (save path project)
+                         (change-opened-project-path path))))))
 
 
 ;;;
@@ -183,12 +204,13 @@
                         (if-let [project (item->project item)]
                           (do
                             (open-project project)
-                            (reset! opened-project-path path))
+                            (change-opened-project-path path))
                           (notifos/set-msg! (str "Failed to read project file: " path)))))})
 
 (cmd/command {:command :ltinator.save-project-as
               :desc "Ltinator: Save project as.."
               :exec (fn []
+                      (println "Save project as..")
                       (when (check-project-dir)
                         (let [path (str @project-directory "/new-project.edn")
                               s (save-project path (current-project))]
