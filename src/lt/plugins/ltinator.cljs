@@ -78,9 +78,9 @@
 (defn- add-items
   []
   (when (check-project-dir)
-    (map #(hash-map :name (path->project-name %)
-                    :path %)
-         (files/full-path-ls @project-directory))))
+    (for [path (files/full-path-ls @project-directory)
+          :when (= (files/ext path) "edn")]
+      (hash-map :name (path->project-name path) :path path))))
 
 (defn- selector
   [opts]
