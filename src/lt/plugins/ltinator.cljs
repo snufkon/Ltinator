@@ -52,6 +52,12 @@
   [path]
   (-> path files/basename files/without-ext))
 
+(defn- add-ext
+  [path extname]
+  (if (empty? (files/ext path))
+    (str path extname)
+    path))
+
 (defn- load-project
   [path]
   (when (files/file? path)
@@ -66,7 +72,7 @@
 (defn- add-items
   []
   (when (check-project-dir)
-    (map #(hash-map :name (-> % files/basename files/without-ext)
+    (map #(hash-map :name (path->project-name %)
                     :path %)
          (files/full-path-ls @project-directory))))
 
@@ -144,12 +150,9 @@
   [:input {:type "file" :nwsaveas (or path true)}]
   :change (fn []
             (this-as me
-                     (when-not (empty? (dom/val me))
-                       (let [path (if (empty? (files/ext (dom/val me)))
-                                    (str (dom/val me) ".edn")
-                                    (dom/val me))]
-                         (save path project)
-                         (change-opened-project-path path))))))
+                     (let [path (-> me dom/val (add-ext ".edn"))]
+                       (save path project)
+                       (change-opened-project-path path)))))
 
 
 ;;;
