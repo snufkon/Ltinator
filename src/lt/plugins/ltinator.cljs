@@ -24,6 +24,10 @@
     true
     false))
 
+(defn- auto-saved-project?
+  [path]
+  (= (files/basename path) "auto-saved.edn"))
+
 (defn- check-project-dir
   []
   (if (files/dir? @project-directory)
@@ -64,12 +68,21 @@
     (str path extname)
     path))
 
-(defn- load-project
+(defn- load-edn-file
   [path]
   (when (files/file? path)
     (let [s (files/bomless-read path)]
       (when-not (empty? s)
         (cljs.reader/read-string s)))))
+
+(defn- load-project
+  [path]
+  (load-edn-file path))
+
+(defn- load-config
+  []
+  (let [path (str @project-directory "/.ltinator")]
+    (load-edn-file path)))
 
 (defn- item->project
   [item]
@@ -132,6 +145,15 @@
   (files/save path (str project))
   (notifos/set-msg! (str "Saved: " path)))
 
+(defn- save-config
+  []
+  (let [path (str @project-directory "/.ltinator")
+        project-path (if (project-opened?)
+                       @opened-project-path
+                       (str @project-directory "/auto-saved.edn"))
+        config {:last-saved-project-path project-path}]
+    (files/save path (str config))))
+
 (defn- change-title
   [title]
   (set! (.-title titlebar/win) title))
@@ -190,8 +212,11 @@
           :reaction (fn [this save?]
                       (app/prevent-close)
                       (when (and save? (check-project-dir))
-                        (let [path (str @project-directory "/auto-saved.edn")]
-                          (save path (current-project))))
+                        (if (project-opened?)
+                          (save @opened-project-path (current-project))
+                          (let [path (str @project-directory "/auto-saved.edn")]
+                            (save path (current-project))))
+                        (save-config))
                       (app/close true)))
 
 (behavior ::auto-load
@@ -200,10 +225,14 @@
           :desc "Ltinator: Set auto load or not"
           :reaction (fn [this load?]
                       (when (and load? (check-project-dir))
-                        (let [path (str @project-directory "/auto-saved.edn")]
+                        (let [config (load-config)
+                              path (or (:last-saved-project-path config)
+                                       (str @project-directory "/auto-saved.edn"))]
                           (when-let [project (load-project path)]
                             (notifos/set-msg! (str "Loaded: " path))
-                            (open-project project))))))
+                            (open-project project)
+                            (when-not (auto-saved-project? path)
+                              (change-opened-project-path path)))))))
 
 
 ;;;
