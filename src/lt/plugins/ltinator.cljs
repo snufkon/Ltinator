@@ -140,7 +140,7 @@
     (change-to-only-one-tabset)
     (open-tabsets project)))
 
-(defn- save
+(defn- save-project
   [path project]
   (files/save path (str project))
   (notifos/set-msg! (str "Saved: " path)))
@@ -164,7 +164,7 @@
         title (str "Light Table [" name "]")]
     (change-title title)))
 
-(defn- change-opened-project-path
+(defn- set-opened-project-path
   [path]
   (reset! opened-project-path path)
   (add-project-name-to-title path))
@@ -179,13 +179,13 @@
 ;;; UIs
 ;;;
 
-(defui save-project [path project]
+(defui save-project-input [path project]
   [:input {:type "file" :nwsaveas (or path true)}]
   :change (fn []
             (this-as me
                      (let [path (-> me dom/val (add-ext ".edn"))]
-                       (save path project)
-                       (change-opened-project-path path)))))
+                       (save-project path project)
+                       (set-opened-project-path path)))))
 
 
 ;;;
@@ -213,9 +213,9 @@
                       (app/prevent-close)
                       (when (and save? (check-project-dir))
                         (if (project-opened?)
-                          (save @opened-project-path (current-project))
+                          (save-project @opened-project-path (current-project))
                           (let [path (str @project-directory "/auto-saved.edn")]
-                            (save path (current-project))))
+                            (save-project path (current-project))))
                         (save-config))
                       (app/close true)))
 
@@ -232,7 +232,7 @@
                             (notifos/set-msg! (str "Loaded: " path))
                             (open-project project)
                             (when-not (auto-saved-project? path)
-                              (change-opened-project-path path)))))))
+                              (set-opened-project-path path)))))))
 
 
 ;;;
@@ -247,7 +247,7 @@
                         (if-let [project (item->project item)]
                           (do
                             (open-project project)
-                            (change-opened-project-path path))
+                            (set-opened-project-path path))
                           (notifos/set-msg! (str "Failed to read project file: " path)))))})
 
 (cmd/command {:command :ltinator.save-project-as
@@ -255,7 +255,7 @@
               :exec (fn []
                       (when (check-project-dir)
                         (let [path (str @project-directory "/new-project.edn")
-                              s (save-project path (current-project))]
+                              s (save-project-input path (current-project))]
                           (set! opener/active-dialog s)
                           (dom/trigger s :click))))})
 
@@ -264,7 +264,7 @@
               :exec (fn []
                       (when (check-project-dir)
                         (if (project-opened?)
-                          (save @opened-project-path (current-project))
+                          (save-project @opened-project-path (current-project))
                           (cmd/exec! :ltinator.save-project-as))))})
 
 (cmd/command {:command :ltinator.clear-project
