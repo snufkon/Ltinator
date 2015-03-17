@@ -84,6 +84,20 @@
   (let [path (str @project-directory "/.ltinator")]
     (load-edn-file path)))
 
+(defn- save-project
+  [path project]
+  (files/save path (str project))
+  (notifos/set-msg! (str "Saved: " path)))
+
+(defn- save-config
+  []
+  (let [path (str @project-directory "/.ltinator")
+        project-path (if (project-opened?)
+                       @opened-project-path
+                       (str @project-directory "/auto-saved.edn"))
+        config {:last-saved-project-path project-path}]
+    (files/save path (str config))))
+
 (defn- item->project
   [item]
   (load-project (:path item)))
@@ -139,20 +153,6 @@
     (cmd/exec! :tabs.close-all)
     (change-to-only-one-tabset)
     (open-tabsets project)))
-
-(defn- save-project
-  [path project]
-  (files/save path (str project))
-  (notifos/set-msg! (str "Saved: " path)))
-
-(defn- save-config
-  []
-  (let [path (str @project-directory "/.ltinator")
-        project-path (if (project-opened?)
-                       @opened-project-path
-                       (str @project-directory "/auto-saved.edn"))
-        config {:last-saved-project-path project-path}]
-    (files/save path (str config))))
 
 (defn- change-title
   [title]
