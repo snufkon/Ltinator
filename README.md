@@ -25,7 +25,7 @@ Set your preferable keys to `ctrl-shft-o` part.
 
 ### Save
 
-You can save a project to select `Ltinator: Save project from current working environment` from the command panel or set the following key bind to your `user.keymap` and hit the keys.
+You can save a project to select `Ltinator: Save project` from the command panel or set the following key bind to your `user.keymap` and hit the keys.
 
     [:app "ctrl-shift-s" :ltinator.save-project]
 
@@ -37,7 +37,6 @@ You can save current working environment (project name: `auto-saved`) to set the
 
     [:app :lt.plugins.ltinator/auto-save true]
 
-
 ### Auto load
 
 You can load `auto-saved` project automatically to set the following to your `user.behaviors` at the timing of LightTable started.
@@ -46,7 +45,15 @@ You can load `auto-saved` project automatically to set the following to your `us
 
 ## Changelog
 
-* 0.0.1 Initial release. (2015-02-28)
+* 0.0.2 (2015-03-18)
+  * Divide save command into `save-project` and `save-project-as` commands.
+  * Display project name to titlebar.
+  * Support opened project for auto-save and auto-load.
+  * Add `clear-project` command.
+
+* 0.0.1 (2015-02-28)
+  * Initial release.
+
 
 ## License
 
